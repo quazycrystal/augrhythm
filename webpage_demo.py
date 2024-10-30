@@ -1,6 +1,6 @@
-# User input
-# 1. tag numbers to DAW components 
-# 2. tag numbers to function: button / knob 
+# User input: tag numbers to function: button / knob 
+# Tag numbers to DAW components -> Make the list of buttons / knobs, User can link them in their DAW like ableton
+# Camera vision is also visible in the website 
 
 from flask import Flask, render_template # Web server library
 import cv2
