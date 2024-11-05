@@ -1,23 +1,7 @@
-# User input: tag numbers to function: button / knob 
-# Tag numbers to DAW components -> Make the list of buttons / knobs, User can link them in their DAW like ableton
-# Camera vision is also visible in the website 
-
-from flask import Flask, render_template # Web server library
 import cv2
 from pyapriltags import Detector
 import rtmidi
 
-app = Flask(__name__) # Web server activation
-
- 
-@app.route('/')
-def main():
-    return render_template('index.html')
-
-if __name__ == '__main__':
-    app.run()
-
-# Virtual knob functions
 # Initialize the AprilTag detector
 detector = Detector(families='tagStandard41h12')
 
@@ -28,7 +12,7 @@ available_ports = midi_out.get_ports() # MIDI OUT to Ableton
 
 # Open the first available MIDI port, or create a new virtual port
 if available_ports:
-    midi_out.open_port(1)
+    midi_out.open_port(0)
     print("Available MIDI Output Ports:")
     for i, port in enumerate(available_ports):
         print(f"[{i}] {port}")
@@ -39,7 +23,7 @@ else:
 def send_midi_signal(tag_id, action):
     # Example: Send a Note On message for tag appearance or disappearance
     note = tag_id % 128  # Example of mapping tag ID to a MIDI note
-    velocity = 64 if action == "appear" else 0  # Velocity 64 for appearance, 0 for disappearance
+    velocity = 127 if action == "appear" else 0  # Velocity 64 for appearance, 0 for disappearance
 
     midi_out.send_message([0x90, note, velocity])  # 0x90 is Note On
 
@@ -97,5 +81,3 @@ finally:
     cap.release()
     cv2.destroyAllWindows()
     midi_out.close_port()
-
-

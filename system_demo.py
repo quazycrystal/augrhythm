@@ -12,7 +12,7 @@ available_ports = midi_out.get_ports() # MIDI OUT to Ableton
 
 # Open the first available MIDI port, or create a new virtual port
 if available_ports:
-    midi_out.open_port(1)
+    midi_out.open_port(0)
     print("Available MIDI Output Ports:")
     for i, port in enumerate(available_ports):
         print(f"[{i}] {port}")
@@ -22,7 +22,7 @@ else:
 # Helper function to send MIDI signals
 def send_midi_signal(tag_id, action):
     # Example: Send a Note On message for tag appearance or disappearance
-    note = tag_id % 128  # Example of mapping tag ID to a MIDI note
+    note = (tag_id + 400) % 128  # Example of mapping tag ID to a MIDI note
     velocity = 64 if action == "appear" else 0  # Velocity 64 for appearance, 0 for disappearance
 
     midi_out.send_message([0x90, note, velocity])  # 0x90 is Note On
