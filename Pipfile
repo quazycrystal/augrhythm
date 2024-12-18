@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+opencv-python = "*"
+pyapriltags = "*"
+pyqt5 = "*"
+numpy = "*"
+pygrabber = "*"
+python-rtmidi = "*"
+tensorflow = "*"
+pydot = "*"
+matplotlib = "*"
+robogym = {ref = "v1.0.2", git = "https://github.com/ivan-alles/robogym.git"}
+tf-keras = "*"
+
+[dev-packages]
+pytest = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.10"

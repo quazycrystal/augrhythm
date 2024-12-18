@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QComboBox, QSpinBox, QPushButton, QWidget, QHBoxLayout, QLabel, QScrollArea, QSplitter
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QComboBox, QSpinBox, QPushButton, QWidget, QHBoxLayout, QLabel, QScrollArea, QSplitter, QDialog
 from PyQt5.QtGui import QImage, QPixmap
 from pyapriltags import Detector
 from pygrabber.dshow_graph import FilterGraph
@@ -23,29 +23,48 @@ def midi_to_note_name(midi_number):
     note = notes[midi_number % 12]
     return f"{note}{octave}"
 
+# Port warning pop-up
+# class PopupDialog(QDialog):
+#     def __init__(self, port_list):
+#         super().__init__()
+#         dialog = QDialog(self)
+#         dialog.setWindowTitle("Popup Dialog")
+#         dialog.setGeometry(300, 300, 200, 100)
+
+#         print(port_list)
+#         # Layout and Label for popup content
+#         for ports in port_list:
+#             if port_list.count(ports) != 1:
+#                 print ("d")
+#                 self.update_button.clicked.connect(self.open_popup)
+
+#                 # Layout and content for the popup dialog
+#                 layout = QVBoxLayout()
+#                 layout.addWidget(QLabel(f"{port_list.index(ports)} Only one function should be designated to a tag"))
+#                 dialog.setLayout(layout)
+
 detector = Detector(families='tagStandard41h12') # Global variable
 class PortFunctionMapper(QMainWindow):
     # Send MIDI signal
     def send_midi_signal(self, tag_id, action):
         if self.tag_function == "button":
-            pressed = 127 if action == "appear" else 0 # If tag appeared and the state changed
-            self.midi_out.send_message([0xB0, tag_id, pressed])  # Control change, max value
+            velocity = 127 if action == "appear" else 0 # If tag appeared and the state changed
+            self.midi_out.send_message([0xB0, tag_id, velocity])  # Control change, max value
         elif self.tag_function == "slider":
             slider_value = int (self.angle * (127/360)) # 360 degrees -> 127 steps
             if action == "appear": # If tag appeared and the state changed
                 self.midi_out.send_message([0xB0, tag_id, slider_value])  # Control change with slider value
         elif self.tag_function == "note":
-            velocity = 127 if action == "appear" else 0 # If tag appeared and the state changed
-            self.midi_out.send_message([0x90, 65, velocity]) # "Note On", note, velocity
-            print (velocity)
+            for values in self.note_value_list:
+                velocity = 127 if action == "appear" and tag_id == values[0] else 0 # If tag appeared and the state changed
+                note_number = values[1]
+                self.midi_out.send_message([0x90, note_number, velocity]) # "Note On", note, velocity
         else:
             None
 
     # Detection of virtual controllers (April tags)
     # Initialize the AprilTag detector with the default tag family
     # Tag detection with dynamic drawing based on mappings
-
-
 
     def tag_detection(self, frame, current_mappings):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -115,7 +134,9 @@ class PortFunctionMapper(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # GUI custom style
         self.setWindowTitle("RealMIDI")
+        self.setStyleSheet("background-color: #FAFAFA;")  # Light background color
         self.setGeometry(100, 100, 1000, 600)  # Initial window size
 
         # Main widget and layout using QSplitter for equal resizing
@@ -128,35 +149,24 @@ class PortFunctionMapper(QMainWindow):
         self.camera_label.setAlignment(QtCore.Qt.AlignCenter)
         splitter.addWidget(self.camera_label)
 
-        # Scroll Area for the mapping and buttons on the right side
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_content = QWidget()
-        scroll_area.setWidget(scroll_content)
-        splitter.addWidget(scroll_area)
-
-        # Set equal stretch factor to maintain half-half split
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 1)
-        
-        # Add minimum size for balance
-        self.camera_label.setMinimumSize(300, 300)
-        scroll_area.setMinimumSize(300, 300)
-
-        # 0. Defalt Layout: within the scroll area for mappings and buttons
-        self.layout = QVBoxLayout(scroll_content)
-        self.layout.setAlignment(QtCore.Qt.AlignTop)  # Aligns items to the top
-        self.layout.setSpacing(10)  # Optional: adjust spacing between rows if needed
-        # Default window settings
+        # 0. Defalt Layout: Create right-side widget with main vertical layout
+        # Non-scrollable area for camera selection, MIDI selection, and buttons
+        right_side_widget = QWidget()
+        self.right_side_layout = QVBoxLayout(right_side_widget)
+        self.top_layout = QVBoxLayout()
+        self.top_layout.setAlignment(QtCore.Qt.AlignTop)  # Aligns items to the top
+        self.top_layout.setSpacing(10)  # Optional: adjust spacing between rows if needed
 
         # 1. Camera: Container for camera selection
         self.available_cams = get_available_cams()
         self.cam_selection = QComboBox()
         cam_name = self.available_cams.keys()
-        self.layout.addWidget(self.cam_selection)
+        #self.layout.addWidget(self.cam_selection)
         for name in cam_name:
             self.cam_selection.addItem(name)
         self.cam_selection.currentIndexChanged.connect(self.get_selected_cam)
+        self.top_layout.addWidget(QLabel("Camera"))
+        self.top_layout.addWidget(self.cam_selection)
 
         # MIDI
         # Get MIDI port
@@ -169,25 +179,55 @@ class PortFunctionMapper(QMainWindow):
         # 2. MIDI: Container for MIDI output selection
         self.midi_selection = QComboBox()
         midi_name = self.available_midis.keys()
-        self.layout.addWidget(self.midi_selection)
+        #self.layout.addWidget(self.midi_selection)
         for name in midi_name:
             self.midi_selection.addItem(name)
         self.midi_selection.currentIndexChanged.connect(self.get_selected_midi)
+        self.top_layout.addWidget(QLabel("MIDI Output"))
+        self.top_layout.addWidget(self.midi_selection)
         
         # 3. New mapping: Button to add a new mapping
         self.add_button = QPushButton("New mapping")
         self.add_button.clicked.connect(self.add_mappings)
-        self.layout.addWidget(self.add_button)
+        #self.layout.addWidget(self.add_button)
+        self.top_layout.addWidget(self.add_button)
 
         # 4. Confirm mapping: Button to update mappings
         self.update_button = QPushButton("Confirm mapping")
         self.update_button.clicked.connect(self.get_mappings)
-        self.layout.addWidget(self.update_button)
+        #self.layout.addWidget(self.update_button)
+        self.top_layout.addWidget(self.update_button)
 
-        # Container for mappings
-        self.mapping_container = QWidget(self)
+        #Scroll Area for the mappings
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+        scroll_content = QWidget()
+        scroll_content_layout = QVBoxLayout(scroll_content)  # Layout for the scroll area content
+        scroll_area.setWidget(scroll_content)
+
+        # 5. Container for mappings
+        self.mapping_container = QWidget()
         self.mapping_layout = QVBoxLayout(self.mapping_container)
-        self.layout.addWidget(self.mapping_container)
+        self.mapping_layout.setAlignment(QtCore.Qt.AlignTop)  # Aligns items to the top
+        self.mapping_layout.setSpacing(10)
+
+        #self.layout.addWidget(self.mapping_container)
+        scroll_content_layout.addWidget(self.mapping_container)  # Add the mapping container to the scrollable content layout
+    
+        # Add top_layout to the right side layout
+        self.right_side_layout.addLayout(self.top_layout)
+        # Add the scroll area to the right side layout
+        self.right_side_layout.addWidget(scroll_area)
+        # Add the right-side widget to the splitter
+        splitter.addWidget(right_side_widget)
+
+        # Set equal stretch factor to maintain half-half split
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
+        
+        # Add minimum size for balance
+        self.camera_label.setMinimumSize(300, 300)
+        scroll_area.setMinimumSize(300, 300)
 
         # Store mapping "layout" widgets for easier management
         self.mappings = []
@@ -202,7 +242,7 @@ class PortFunctionMapper(QMainWindow):
         #self.timer.timeout.connect(self.send_midi) # auto-refresh send_midi
         self.cap = cv2.VideoCapture(0)  # Open selected camera
         self.midi = self.midi_out.open_port(0)
-        #self.midi_out.send_message([0x90, 100, 64]) # Check MIDI port by sound
+        self.midi_out.send_message([0x90, 100, 64]) # Check MIDI port by sound
         self.timer.start(30)  # Update the cam frame and list every 30 ms
 
         # Track previous tag detections
@@ -228,7 +268,7 @@ class PortFunctionMapper(QMainWindow):
         self.cap = cv2.VideoCapture(cam_index)
 
     def update_midi_list(self):
-        # Retrieve the current list of available cameras
+        # Retrieve the current list of available midis
         new_available_midis = self.available_midis
 
         # Check if the list has changed
@@ -305,7 +345,8 @@ class PortFunctionMapper(QMainWindow):
     def get_mappings(self):
         """Retrieve current mappings and print them (only when 'Mapping update' is clicked)"""
         self.current_mappings = []
-        self.note_value = int()
+        self.note_value_list = []
+        self.port_list = []
         
         for port_spinbox, function_combobox, note_combobox, _ in self.mappings:
             port = port_spinbox.value()
@@ -314,11 +355,31 @@ class PortFunctionMapper(QMainWindow):
             note_value = note_combobox.currentIndex() # To send note MIDI value
 
             self.current_mappings.append([port, function, note])
-            self.note_value = note_value
+            self.note_value_list.append([port, note_value])
+            self.port_list.append(port)
+
         # "self".current_mappings -> connect GUI and tracking
         print(self.current_mappings)  # You can replace this with further processing
-        print(note_value)
+        print(self.note_value_list)
+        print(self.port_list)
 
+ 
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle("Popup Dialog")
+        self.dialog.setGeometry(300, 300, 200, 100)
+
+        # Layout and content for the popup dialog
+        layout = QVBoxLayout()
+        # Layout and Label for popup content
+        for ports in self.port_list:
+            if self.port_list.count(ports) != 1:
+                print ("d")
+                layout.addWidget(QLabel(f"Row {self.port_list.index(ports)} Only one function should be designated to a tag"))
+                self.dialog.setLayout(layout)
+                self.update_button.clicked.connect(self.open_popup)
+            else:
+                None
+             
     def update_frame(self):
         """Read a frame from the camera, apply rotation detection, and update the QLabel."""
         ret, frame = self.cap.read()
@@ -337,6 +398,9 @@ class PortFunctionMapper(QMainWindow):
 
             # Update the QLabel with the scaled QPixmap
             self.camera_label.setPixmap(QPixmap.fromImage(scaled_qt_image))
+    
+    def open_popup(self):
+        self.dialog.exec_()  # This makes the popup modal (blocking)
 
     def resizeEvent(self, event):
         """Handle window resizing to adjust camera feed and scroll area size"""
