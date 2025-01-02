@@ -1,25 +1,25 @@
 # Tag rules -> Activate when only appeared
 
 # 1. Controllers
-0: Play (Button)
-1: Stop (Button)
-2: Pause (Button)
-3: Loop (Button)
+0: Play (off) / Stop (on) (Button)
+1: Play (off) / Pause (on) (Button)
+2: Loop 1 (Button)
+3: Loop 2 (Button)
 4: Volume (Knob)
-5: Scroll (Knob)
+5: Track panning (Knob)
 6: Speed (Knob)
 7: Transpose (Knob)
 
-# 2. MIDI / Audio track (Slider / Knob)
-8 - 15: MIDI clips
-16 - 23: Audio clips
+# 2. Audio track (Slider / Knob)
+8 - 15: Audio track 1
+16 - 23: Audio track 2
 
 # 3. Effectors (Knob)
-24: Biquad - frequency
-25: Biquad - gain
-26: Biquad - Q/S
-27: Delay - time
-28: Delay - feedback
-29: Compressor
+24: Tremolo Dry / Wet
+25: Tremolo Rate
+26: Flenger Rate
+27: Flenger Depth
+28: Flenger Delay
+29: Flenger Feedback
 30: Distortion
-31: Wet / Dry
+31: Harmonics
