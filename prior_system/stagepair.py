@@ -98,9 +98,9 @@ class Backend:
         previous_detected_angles = [0] * num_tags
         detection_counters = 0 # Counters for stability
         angle_counters = 0
-        stability_threshold = 5  # Number of consecutive frames for stability
+        stability_threshold = 0  # Number of consecutive frames for stability
         state = 0
-        black = (0, 0, 0)  # Black for IDs and angles
+        white = (255, 255, 255)  # white for IDs and angles
         green = (0, 255, 0) # Green for frames
 
         try:
@@ -156,43 +156,46 @@ class Backend:
                 target_angle_tags = {4, 5, 6, 7, 24, 25, 26, 27, 28, 29, 30, 31}
                 
                 for tag in tags: #already detected tagssss
-                    if tag.tag_id in target_angle_tags:
-                        corners = np.array(tag.corners, dtype=int)
-                        dy = corners[1][1] - corners[0][1]
-                        dx = corners[1][0] - corners[0][0]
-                        angle = int((np.degrees(np.arctan2(dy, dx)) + 360) % 360)
-                        detected_angles[tag.tag_id] = angle
+                    corners = np.array(tag.corners, dtype=int)
+                    dy = corners[1][1] - corners[0][1]
+                    dx = corners[1][0] - corners[0][0]
 
-                        if state == 0: # if stable
-                            angle_counters = 0  # Increment counter for instability
-                            previous_detected_angles = detected_angles
+                    for i in range(4):
+                        # Sending video
+                        # Draw detected tag corners and ID on the frame
+                        cv2.line(frame, tuple(corners[i]), tuple(corners[(i + 1) % 4]), green, 2)
+                        cv2.putText(frame, f"#{tag.tag_id}", (corners[0][0], corners[0][1] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, white, 2)
 
-                        elif state == 1: # if flicker occurs
-                                angle_counters += 1  # Increment counter for instability
-                                # Change stable state if the counter exceeds the threshold
-                                if detection_counters >= stability_threshold:
-                                    previous_detected_angles = detected_angles
-                        
-                        for i in range(4):
-                            # Sending video
-                            # Draw detected tag corners and ID on the frame
-                            cv2.line(frame, tuple(corners[i]), tuple(corners[(i + 1) % 4]), green, 2)
-                            cv2.putText(frame, f"#{tag.tag_id}", (corners[0][0], corners[0][1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, black, 2)
-
+                        if tag.tag_id in target_angle_tags:
+                            pre_angle = int((np.degrees(np.arctan2(dy, dx)) + 360) % 360)
+                            angle = int(pre_angle//22.5)
+                            detected_angles[tag.tag_id] = angle
+                            
                             # Draw detected angle on the frame (only knobs)
                             cv2.putText(frame, f"{angle} dgr", (corners[0][0], corners[0][1] - 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, black, 2) 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, white, 2) 
+  
+                            if state == 0: # if stable
+                                angle_counters = 0  # Increment counter for instability
+                                previous_detected_angles[tag.tag_id] = detected_angles[tag.tag_id]
 
-                for i in range (num_tags):
-                    if previous_max_tags[i] == 0: # if tag disappeared
-                        previous_detected_angles[i] = 0                
+                            elif state == 1: # if flicker occurs
+                                    angle_counters += 1  # Increment counter for instability
+                                    # Change stable state if the counter exceeds the threshold
+                                    if detection_counters >= stability_threshold:
+                                        previous_detected_angles[tag.tag_id] = detected_angles[tag.tag_id]
+
+                # KEEP THE ANGLE VALUE REGARDLESS OF TAG ON / OFF
+                # for i in range (num_tags):
+                #     if previous_max_tags[i] == 0: # if tag disappeared
+                #         previous_detected_angles[i] = 0      
 
                 self.send_osc_message(self.osc_client_angles, "/angles", previous_detected_angles)
                 # print (previous_detected_angles)
 
                 # Display the frame
-                cv2.imshow("Blendacoustics", frame)
+                cv2.imshow("Stagepair", frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
         finally:

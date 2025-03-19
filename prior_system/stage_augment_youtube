@@ -1,0 +1,74 @@
+import cv2
+import os
+os.environ["PAFY_BACKEND"] = "yt-dlp"
+import pafy
+from pyapriltags import Detector
+import numpy as np
+
+# Initialize the AprilTag detector.
+# You can adjust parameters as needed.
+detector = Detector(
+    families="tagStandard41h12",
+    nthreads=1,
+    quad_decimate=1.0,
+    quad_sigma=0.0,
+    refine_edges=True,
+    decode_sharpening=0.25,
+    debug=False
+)
+
+# Replace with your YouTube video URL.
+# https://www.youtube.com/watch?v=VIDEO_ID form
+youtube_url = "https://www.youtube.com/watch?v=CRz_omoBjPw"
+
+# Use pafy to get the video stream details.
+video = pafy.new(youtube_url)
+best = video.getbest(preftype="mp4")
+
+# Open the video stream.
+cap = cv2.VideoCapture(best.url)
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Convert frame to grayscale for tag detection.
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    # Detect AprilTags in the frame.
+    # The parameter 'estimate_tag_pose' is set to False because we are not estimating the pose here.
+    detections = detector.detect(gray, estimate_tag_pose=False)
+    
+    # Loop over the detected tags.
+    for detection in detections:
+        # Extract the corners (order: top-left, top-right, bottom-right, bottom-left).
+        # The corners are returned as a numpy array.
+        corners = detection.corners
+        ptA, ptB, ptC, ptD = corners
+        ptA = tuple(np.rint(ptA).astype(int))
+        ptB = tuple(np.rint(ptB).astype(int))
+        ptC = tuple(np.rint(ptC).astype(int))
+        ptD = tuple(np.rint(ptD).astype(int))
+
+        # Draw the bounding box around the detected tag.
+        cv2.line(frame, ptA, ptB, (0, 255, 0), 2)
+        cv2.line(frame, ptB, ptC, (0, 255, 0), 2)
+        cv2.line(frame, ptC, ptD, (0, 255, 0), 2)
+        cv2.line(frame, ptD, ptA, (0, 255, 0), 2)
+
+        # Draw the center of the tag and display its ID.
+        cX, cY = int(detection.center[0]), int(detection.center[1])
+        cv2.circle(frame, (cX, cY), 5, (0, 0, 255), -1)
+        cv2.putText(frame, str(detection.tag_id), (ptA[0], ptA[1] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    # Display the processed frame.
+    cv2.imshow("AprilTag Detection", frame)
+    
+    # Exit the loop when 'q' is pressed.
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
