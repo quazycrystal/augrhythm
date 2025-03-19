@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 630.0, 82.0, 614.0, 636.0 ],
+		"rect" : [ 38.0, 82.0, 1206.0, 636.0 ],
 		"gridsize" : [ 15.0, 15.0 ],
 		"boxes" : [ 			{
 				"box" : 				{
@@ -512,7 +512,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 2164.0, 1660.0, 62.0, 69.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 181.577279079604295, 460.658840209245682, 79.909090995788574, 69.0 ],
+					"presentation_rect" : [ 180.0, 461.0, 79.909090995788574, 69.0 ],
 					"saved_attribute_attributes" : 					{
 						"activedialcolor" : 						{
 							"expression" : "themecolor.live_control_selection_variant"
@@ -860,7 +860,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 1646.0, 432.0, 65.0, 21.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 28.18890792131424, 362.878659397363663, 51.948051452636719, 21.0 ],
+					"presentation_rect" : [ 28.18890792131424, 362.878659397363663, 52.0, 21.0 ],
 					"saved_attribute_attributes" : 					{
 						"textcolor" : 						{
 							"expression" : "themecolor.live_macro_title"
@@ -893,7 +893,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 5278.5, 2568.0, 65.0, 69.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 516.728066146373749, 557.984461545944214, 81.151160836219788, 69.0 ],
+					"presentation_rect" : [ 515.799567371606827, 557.984461545944214, 81.151160836219788, 69.0 ],
 					"saved_attribute_attributes" : 					{
 						"activedialcolor" : 						{
 							"expression" : "themecolor.live_control_selection_variant"
@@ -1085,7 +1085,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 5994.5, 2692.0, 65.0, 69.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 601.343437850475311, 557.984461545944214, 75.74172830581665, 69.0 ],
+					"presentation_rect" : [ 603.0, 558.0, 75.74172830581665, 69.0 ],
 					"saved_attribute_attributes" : 					{
 						"activedialcolor" : 						{
 							"expression" : "themecolor.live_control_selection_variant"
@@ -1187,7 +1187,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 4746.5, 2856.0, 181.914893388748169, 62.0 ],
-					"presentation_linecount" : 4,
 					"text" : "Flanger Basics\nby HearingGlass\n\nhttps://youtu.be/juMMLpZiXrU"
 				}
 
@@ -1962,7 +1961,7 @@
 
 							}
  ],
-						"originid" : "pat-76"
+						"originid" : "pat-86"
 					}
 ,
 					"patching_rect" : [ 4942.5, 2816.0, 68.12121307849884, 22.0 ],
@@ -2167,7 +2166,7 @@
 
 							}
  ],
-						"originid" : "pat-78"
+						"originid" : "pat-88"
 					}
 ,
 					"patching_rect" : [ 5274.5, 2776.0, 67.0, 22.0 ],
@@ -2211,7 +2210,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 5454.5, 2760.0, 170.786530494689941, 48.0 ],
-					"presentation_linecount" : 3,
 					"text" : "Distortion Basics\nby Umut Eldem\nhttps://youtu.be/-D1Llg6L55A"
 				}
 
@@ -2723,7 +2721,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 4406.5, 2352.0, 88.25, 55.0 ],
-					"presentation_linecount" : 2,
 					"text" : "set cutoff or center freq"
 				}
 
@@ -2754,7 +2751,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 4098.5, 2516.0, 120.0, 40.0 ],
-					"presentation_linecount" : 2,
 					"text" : "clear biquad~ if filter blows up"
 				}
 
@@ -3391,7 +3387,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 2134.0, 2697.561039924621582, 181.914893388748169, 62.0 ],
-					"presentation_linecount" : 4,
 					"text" : "Flanger Basics\nby HearingGlass\n\nhttps://youtu.be/juMMLpZiXrU"
 				}
 
@@ -4166,7 +4161,7 @@
 
 							}
  ],
-						"originid" : "pat-74"
+						"originid" : "pat-90"
 					}
 ,
 					"patching_rect" : [ 2329.121955871582031, 2656.0976243019104, 68.12121307849884, 22.0 ],
@@ -5646,7 +5641,7 @@
 
 							}
  ],
-						"originid" : "pat-18"
+						"originid" : "pat-92"
 					}
 ,
 					"patching_rect" : [ 2663.414697647094727, 2617.073233127593994, 67.0, 22.0 ],
@@ -12805,7 +12800,7 @@
 
 			}
  ],
-		"originid" : "pat-6",
+		"originid" : "pat-84",
 		"parameters" : 		{
 			"obj-103" : [ "Volume", "#6 Volume", 0 ],
 			"obj-105" : [ "Speed", "#9 Speed Up", 0 ],
